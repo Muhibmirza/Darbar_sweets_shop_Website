@@ -1,0 +1,6 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^uploads/.*\.(php|phtml|phar)$ - [F,L,NC]
+<FilesMatch "^(\.env|composer\.(json|lock)|.*\.sql)$">
+  Require all denied
+</FilesMatch>
