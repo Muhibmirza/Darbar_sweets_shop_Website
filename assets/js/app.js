@@ -1,4 +1,6 @@
 (() => {
+  const fontStyles=document.createElement('link');fontStyles.rel='stylesheet';fontStyles.href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap';document.head.appendChild(fontStyles);
+  const premiumStyles=document.createElement('link');premiumStyles.rel='stylesheet';premiumStyles.href=(window.DARBAR?.base||'')+'assets/css/premium.css';document.head.appendChild(premiumStyles);
   const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
   let cart=Array.isArray(window.DARBAR.cart)?window.DARBAR.cart:Object.values(window.DARBAR.cart||{});
   const money=n=>'Rs. '+Number(n).toLocaleString('en-PK');
@@ -28,13 +30,29 @@
   const search=$('#shopSearch'),category=$('#categoryFilter'),sort=$('#sortProducts');
   function filter(){let cards=$$('.shop-products .product-card');cards.forEach(c=>c.hidden=!(c.dataset.name.includes((search?.value||'').toLowerCase())&&(!category?.value||c.dataset.category===category.value)));if(sort?.value!=='featured'){cards.sort((a,b)=>(+a.dataset.price- +b.dataset.price)*(sort.value==='high'?-1:1)).forEach(c=>c.parentNode.appendChild(c))}}
   [search,category,sort].forEach(x=>x?.addEventListener('input',filter));renderCart();
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const header=$('.site-header'),navToggle=$('.nav-toggle');
+  requestAnimationFrame(()=>document.body.classList.add('page-ready'));
+  addEventListener('scroll',()=>header?.classList.toggle('scrolled',scrollY>18),{passive:true});
+  navToggle?.addEventListener('click',()=>{const open=document.body.classList.toggle('nav-open');navToggle.setAttribute('aria-expanded',String(open))});
+  $$('.nav nav a').forEach(link=>link.addEventListener('click',()=>document.body.classList.remove('nav-open')));
+  const revealObserver='IntersectionObserver' in window?new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('in-view');revealObserver.unobserve(entry.target)}}),{threshold:.12,rootMargin:'0px 0px -40px'}):null;
+  $$('.reveal').forEach((el,i)=>{el.style.setProperty('--reveal-delay',`${(i%4)*65}ms`);if(revealObserver)revealObserver.observe(el);else el.classList.add('in-view')});
   const slides=$$('.banner-slide'),dots=$$('.banner-dots span');let bannerIndex=0,bannerTimer;
-  function showBanner(index){if(!slides.length)return;bannerIndex=(index+slides.length)%slides.length;slides.forEach((s,i)=>s.classList.toggle('active',i===bannerIndex));dots.forEach((d,i)=>d.classList.toggle('active',i===bannerIndex))}
-  function startBanners(){if(slides.length>1){clearInterval(bannerTimer);bannerTimer=setInterval(()=>showBanner(bannerIndex+1),4500)}}
-  showBanner(0);startBanners();
-  if(window.gsap&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  function showBanner(index,initial=false){
+    if(!slides.length)return;
+    const nextIndex=(index+slides.length)%slides.length,current=slides[bannerIndex],next=slides[nextIndex];
+    if(initial){slides.forEach((slide,i)=>{slide.classList.toggle('active',i===nextIndex);slide.setAttribute('aria-hidden',String(i!==nextIndex))});bannerIndex=nextIndex;return}
+    if(nextIndex===bannerIndex)return;
+    current.classList.remove('active');current.classList.add('leaving');current.setAttribute('aria-hidden','true');
+    next.classList.add('active');next.setAttribute('aria-hidden','false');
+    dots.forEach((dot,i)=>dot.classList.toggle('active',i===nextIndex));bannerIndex=nextIndex;
+    setTimeout(()=>{current.classList.add('no-transition');current.classList.remove('leaving');requestAnimationFrame(()=>requestAnimationFrame(()=>current.classList.remove('no-transition')))},900);
+  }
+  function startBanners(){if(slides.length>1&&!reducedMotion){clearInterval(bannerTimer);bannerTimer=setInterval(()=>showBanner(bannerIndex+1),2000)}}
+  showBanner(0,true);dots.forEach((dot,i)=>dot.classList.toggle('active',i===0));startBanners();
+  if(window.gsap&&!reducedMotion){
     gsap.registerPlugin(ScrollTrigger);
-    gsap.utils.toArray('.reveal').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.65,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%',once:true}}));
     const section=$('.sweet-break');if(section){const tl=gsap.timeline({scrollTrigger:{trigger:section,start:'top top',end:'bottom bottom',scrub:1,pin:'.break-stage'}});
       tl.to('.intact',{opacity:0,scale:.94,duration:.18},.18).to('.sweet-half',{opacity:1,duration:.08},.2).to('.sweet-half.left',{x:'-26%',y:'9%',rotation:-12,ease:'back.out(1.4)',duration:.3},.22).to('.sweet-half.right',{x:'26%',y:'9%',rotation:12,ease:'back.out(1.4)',duration:.3},.22).to('.syrup-photo',{scaleY:1,opacity:1,duration:.3,ease:'power3.out'},.38).to('.break-copy',{opacity:1,y:0,duration:.25},.62).to('.sweet-composition',{scale:1.08,opacity:.3,duration:.3},.72);
       gsap.to('.syrup-photo',{filter:'brightness(1.2) saturate(1.15)',repeat:-1,yoyo:true,duration:1.2,ease:'sine.inOut'});
