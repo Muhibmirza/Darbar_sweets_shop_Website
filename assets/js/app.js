@@ -1,7 +1,7 @@
 (() => {
   const fontStyles=document.createElement('link');fontStyles.rel='stylesheet';fontStyles.href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap';document.head.appendChild(fontStyles);
   const premiumStyles=document.createElement('link');premiumStyles.rel='stylesheet';premiumStyles.href=(window.DARBAR?.base||'')+'assets/css/premium.css';document.head.appendChild(premiumStyles);
-  const atelierStyles=document.createElement('link');atelierStyles.rel='stylesheet';atelierStyles.href=(window.DARBAR?.base||'')+'assets/css/atelier.css?v=20260829';document.head.appendChild(atelierStyles);
+  const atelierStyles=document.createElement('link');atelierStyles.rel='stylesheet';atelierStyles.href=(window.DARBAR?.base||'')+'assets/css/atelier.css?v=20260829c';document.head.appendChild(atelierStyles);
   const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
   let cart=Array.isArray(window.DARBAR.cart)?window.DARBAR.cart:Object.values(window.DARBAR.cart||{});
   const money=n=>'Rs. '+Number(n).toLocaleString('en-PK');
@@ -38,6 +38,9 @@
     const m={visa:'payment_visa',mastercard:'payment_mastercard',jazzcash:'payment_jazzcash',easypaisa:'payment_easypaisa'};$$('.payment-logos img').forEach(i=>{const k=Object.keys(m).find(x=>(i.alt+' '+i.src).toLowerCase().includes(x));if(k)i.hidden=s[m[k]]!=='1'});
   }).catch(()=>{});
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const animatedCards=$$('.product-card,.category-card,.usp-grid>div,.quote-grid blockquote,.contact-card,.content-card,.account-card,.form-card,.offer-inner,.newsletter>.container,.payment-option,.cart-line');
+  animatedCards.forEach((card,index)=>{card.classList.add('motion-card',index%3===0?'motion-left':index%3===2?'motion-right':'motion-center');card.style.setProperty('--motion-delay',`${(index%4)*75}ms`)});
+  if(!reducedMotion&&'IntersectionObserver' in window){document.documentElement.classList.add('motion-ready');const cardObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('motion-in');cardObserver.unobserve(entry.target)}}),{threshold:.08,rootMargin:'0px 0px -24px'});animatedCards.forEach(card=>cardObserver.observe(card))}else{animatedCards.forEach(card=>card.classList.add('motion-in'))}
   const header=$('.site-header'),navToggle=$('.nav-toggle');
   requestAnimationFrame(()=>document.body.classList.add('page-ready'));
   addEventListener('scroll',()=>header?.classList.toggle('scrolled',scrollY>18),{passive:true});

@@ -16,4 +16,4 @@
 
 // Premium admin enhancements are loaded below.
 ['premium-admin.css'].forEach(h=>{const l=document.createElement('link');l.rel='stylesheet';l.href=h+'?v=20260829';document.head.appendChild(l)});
-['charts.js','footer-controls.js'].forEach(s=>{const x=document.createElement('script');x.src=s+'?v=20260829';document.body.appendChild(x)});
+['charts.js','footer-controls.js'].forEach(s=>{const x=document.createElement('script');x.src=s+'?v=20260829c';document.body.appendChild(x)});
