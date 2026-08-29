@@ -83,3 +83,57 @@ function active_categories(): array {
         return $pdo->query('SELECT * FROM categories WHERE is_active=1 ORDER BY is_featured DESC,sort_order,id')->fetchAll();
     } catch (Throwable $exception) { return []; }
 }
+function category_by_name(string $name): ?array {
+    global $pdo;
+    if ($pdo && $name !== '') {
+        try {
+            $q = $pdo->prepare('SELECT * FROM categories WHERE name = ? AND is_active = 1 LIMIT 1');
+            $q->execute([$name]);
+            $row = $q->fetch();
+            if ($row) return $row;
+        } catch (Throwable $exception) {}
+    }
+    return null;
+}
+function seo_meta(string $page, array $context = []): array {
+    $site = setting('site_name', 'Darbar Sweets');
+    $defaultDescription = setting('seo_site_description', 'Darbar Sweets — handcrafted mithai, halwa and celebration boxes delivered fresh.');
+    $keywords = setting('seo_keywords', 'darbar sweets, mithai karachi, halwa, kulfi, gift boxes');
+    $logo = setting('logo', 'uploads/logo/darbar-sweets-logo.png');
+    $titles = [
+        'home' => 'Premium Mithai, Made Fresh Daily',
+        'shop' => ($context['category'] ?? '') ?: 'Shop Mithai',
+        'product' => $context['product_name'] ?? 'Product Details',
+        'cart' => 'Your Cart',
+        'checkout' => 'Checkout',
+        'login' => 'Customer Login',
+        'register' => 'Create Account',
+        'account' => 'My Account',
+        'about' => 'Our Story',
+        'contact' => 'Contact Us',
+        'track' => 'Track Your Order',
+    ];
+    $title = $titles[$page] ?? ucfirst($page);
+    $description = $defaultDescription;
+    $image = $logo;
+    if ($page === 'product' && !empty($context['product'])) {
+        $product = $context['product'];
+        $title = $product['name'];
+        $description = trim((string)($product['short_description'] ?: $product['description'] ?: $defaultDescription));
+        if (!empty($product['image'])) $image = $product['image'];
+    } elseif ($page === 'shop' && !empty($context['category_row']['description'])) {
+        $description = (string)$context['category_row']['description'];
+        if (!empty($context['category_row']['image'])) $image = (string)$context['category_row']['image'];
+    } elseif ($page === 'about') {
+        $description = trim(setting('about_para1', $defaultDescription));
+    } elseif ($page === 'contact') {
+        $description = trim(setting('contact_hero_text', 'Contact Darbar Sweets in Karachi for orders, gifting and delivery support.'));
+    }
+    return [
+        'title' => $title,
+        'description' => mb_substr($description, 0, 160),
+        'keywords' => $keywords,
+        'image' => $image,
+        'canonical' => $page === 'home' ? url() : url('?page=' . $page . ($page === 'product' && !empty($context['product']['id']) ? '&id=' . $context['product']['id'] : '') . ($page === 'shop' && !empty($context['category']) ? '&category=' . urlencode($context['category']) : '')),
+    ];
+}

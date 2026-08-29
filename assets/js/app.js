@@ -17,7 +17,7 @@
   function closeCart(){drawer?.classList.remove('open');overlay?.classList.remove('open');drawer?.setAttribute('aria-hidden','true')}
   $('.cart-open')?.addEventListener('click',openCart);$('.cart-close')?.addEventListener('click',closeCart);overlay?.addEventListener('click',closeCart);
   const searchPanel=$('.search-panel');function toggleSearch(open){searchPanel?.classList.toggle('open',open);searchPanel?.setAttribute('aria-hidden',open?'false':'true');if(open)setTimeout(()=>$('#globalSearch')?.focus(),150)}
-  $('.search-btn')?.addEventListener('click',()=>toggleSearch(true));$('.search-close')?.addEventListener('click',()=>toggleSearch(false));document.addEventListener('keydown',e=>{if(e.key==='Escape')toggleSearch(false)});
+  $('.search-btn')?.addEventListener('click',()=>toggleSearch(true));$('.search-close')?.addEventListener('click',()=>toggleSearch(false));document.addEventListener('keydown',e=>{if(e.key==='Escape'){toggleSearch(false);setFiltersOpen(false)}});
   async function update(payload){
     const r=await fetch(`${DARBAR.base}api/cart.php`,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':DARBAR.csrf},body:JSON.stringify(payload)});
     if(!r.ok)throw new Error('Cart update failed');const d=await r.json();cart=d.cart;renderCart();$$('.cart-badge').forEach(x=>{x.classList.remove('pop');void x.offsetWidth;x.classList.add('pop')});return d;
@@ -28,9 +28,11 @@
     const a=e.target.closest('[data-cart-action]');if(a){const i=cart.find(x=>String(x.id)===a.dataset.id);if(!i)return;const type=a.dataset.cartAction;if(type==='remove')await update({action:'remove',id:i.id});else await update({action:'set',id:i.id,qty:type==='up'?i.qty+1:Math.max(1,i.qty-1)})}
   });
   function showToast(t){const el=$('.toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
-  const search=$('#shopSearch'),category=$('#categoryFilter'),sort=$('#sortProducts');
-  function filter(){let cards=$$('.shop-products .product-card');cards.forEach(c=>c.hidden=!(c.dataset.name.includes((search?.value||'').toLowerCase())&&(!category?.value||c.dataset.category===category.value)));if(sort?.value!=='featured'){cards.sort((a,b)=>(+a.dataset.price- +b.dataset.price)*(sort.value==='high'?-1:1)).forEach(c=>c.parentNode.appendChild(c))}}
-  [search,category,sort].forEach(x=>x?.addEventListener('input',filter));renderCart();
+  const search=$('#shopSearch'),category=$('#categoryFilter'),sort=$('#sortProducts'),filterPanel=$('#filterPanel'),filterOverlay=$('#filterOverlay'),filterToggle=$('#filterToggle'),filterClose=$('#filterClose'),filterApply=$('#filterApply'),shopCount=$('#shopCount');
+  function setFiltersOpen(open){filterPanel?.classList.toggle('open',open);filterOverlay?.classList.toggle('open',open);filterToggle?.setAttribute('aria-expanded',String(open));filterPanel?.setAttribute('aria-hidden',String(!open));if(filterOverlay)filterOverlay.hidden=!open;document.body.classList.toggle('filter-open',open)}
+  filterToggle?.addEventListener('click',()=>setFiltersOpen(true));filterClose?.addEventListener('click',()=>setFiltersOpen(false));filterOverlay?.addEventListener('click',()=>setFiltersOpen(false));filterApply?.addEventListener('click',()=>setFiltersOpen(false));
+  function filter(){let cards=$$('.shop-products .product-card');let visible=0;cards.forEach(c=>{const match=c.dataset.name.includes((search?.value||'').toLowerCase())&&(!category?.value||c.dataset.category===category.value);c.hidden=!match;if(match)visible++});if(shopCount)shopCount.textContent=visible;if(sort?.value!=='featured'){cards.sort((a,b)=>(+a.dataset.price- +b.dataset.price)*(sort.value==='high'?-1:1)).forEach(c=>c.parentNode.appendChild(c))}}
+  [search,category,sort].forEach(x=>x?.addEventListener('input',filter));filter();renderCart();
   fetch((window.DARBAR?.base||'')+'api/site-settings.php').then(r=>r.json()).then(s=>{
     const c=$$('.footer-grid>div');if(c[0]?.querySelector('p'))c[0].querySelector('p').textContent=s.footer_about;
     if(c[3]){const p=c[3].querySelectorAll('p');if(p[0])p[0].textContent=s.footer_location;if(p[1])p[1].textContent=s.footer_hours;if(p[2])p[2].textContent=s.footer_phone;const links=[['Facebook',s.footer_facebook],['Instagram',s.footer_instagram],['WhatsApp',s.footer_whatsapp]].filter(x=>/^https?:\/\//i.test(x[1]||''));if(links.length){const d=document.createElement('div');d.className='footer-socials';links.forEach(([l,u])=>{const a=document.createElement('a');a.textContent=l;a.href=u;a.target='_blank';a.rel='noopener';d.appendChild(a)});c[3].appendChild(d)}}

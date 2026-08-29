@@ -21,7 +21,18 @@ CREATE TABLE usp_blocks(id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,title VARCHAR
 CREATE TABLE pages(id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,slug VARCHAR(100) UNIQUE,title VARCHAR(160),content LONGTEXT,meta_title VARCHAR(180),meta_description VARCHAR(255),updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)ENGINE=InnoDB;
 CREATE TABLE settings(id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,setting_key VARCHAR(120) UNIQUE NOT NULL,setting_value LONGTEXT,setting_group VARCHAR(60) DEFAULT 'general')ENGINE=InnoDB;
 INSERT INTO admins(name,email,password,role) VALUES('Darbar Administrator','admin@darbarsweets.pk','$2y$10$WRWyacd9OzH0U6vSTHnaWOca0YMITnwFEVYT4ocL4wJ6ehPEu299W','super_admin');
-INSERT INTO categories(name,slug,description,sort_order,is_featured) VALUES('Mithai','mithai','Classic handcrafted mithai',1,1),('Halwa','halwa','Slow-cooked traditional halwa',2,1),('Dry Fruit Sweets','dry-fruit-sweets','Nut-forward premium sweets',3,1),('Bakery','bakery','Fresh baked favourites',4,1),('Gift Boxes','gift-boxes','Curated celebration gifts',5,1);
+INSERT INTO categories(name,slug,image,description,sort_order,is_featured) VALUES
+('Mithai','mithai','uploads/products/darbar-originals/gulab-jamun.jpg','Classic handcrafted mithai',1,1),
+('Halwa','halwa','uploads/products/darbar-originals/patisa-barfi.jpg','Slow-cooked traditional halwa',2,1),
+('Dry Fruit Sweets','dry-fruit-sweets','uploads/products/darbar-originals/dry-fruit-seed-ladoo.jpg','Nut-forward premium sweets',3,1),
+('Bakery','bakery','uploads/products/darbar-originals/pink-coconut-modak.jpg','Fresh baked favourites',4,1),
+('Gift Boxes','gift-boxes','uploads/products/darbar-originals/chocolate-coconut-sandwich.jpg','Curated celebration gifts',5,1),
+('Ice Creams','ice-creams','uploads/categories/ice-creams.jpg','Creamy scoops and frozen delights',6,1),
+('Samosa Rolls','samosa-rolls','uploads/categories/samosa-rolls.jpg','Crispy rolls and savoury bites',7,1),
+('Cakes and Pastries','cakes-and-pastries','uploads/categories/cakes-pastries.jpg','Fresh cakes and buttery pastries',8,1),
+('Kulfi & Falooda','kulfi-falooda','uploads/categories/kulfi-falooda.jpg','Traditional kulfi and falooda classics',9,1),
+('Dairy Milk Packed Items','dairy-milk-packed-items','uploads/categories/dairy-packed.jpg','Fresh dairy and packed milk essentials',10,1),
+('Chips and Snacks','chips-and-snacks','uploads/categories/chips-snacks.jpg','Crunchy snacks for every craving',11,1);
 INSERT INTO products(category_id,name,slug,sku,short_description,price,compare_price,stock,image,is_featured) VALUES
 (1,'Royal Kaju Katli','royal-kaju-katli','DS-KK-500','Silken cashew diamonds finished with silver leaf.',1850,2050,45,'uploads/products/supplied/product-14.jpg',1),
 (1,'Motichoor Ladoo','motichoor-ladoo','DS-ML-500','Delicate saffron pearls shaped by hand.',960,NULL,60,'uploads/products/supplied/product-27.jpg',1),
